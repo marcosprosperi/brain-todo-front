@@ -13,18 +13,16 @@ import {
 import { format, isAfter } from "date-fns";
 import { Task } from "@/Api/tasks/types/task";
 import { SortOption, sortTasks } from "../utils/utils";
+import useDeleteTask from "../mutations/delete";
+import useUpdateTask from "../mutations/update";
 
 interface TaskListProps {
   tasks: Task[];
-  onToggleTask: (id: string) => void;
-  onDeleteTask: (id: string) => void;
   isLoading: boolean;
 }
 
 export function TaskList({
   tasks,
-  onToggleTask,
-  onDeleteTask,
   isLoading,
 }: TaskListProps) {
   const [sortOption, setSortOption] = useState<SortOption>("createdDesc");
@@ -32,6 +30,19 @@ export function TaskList({
     () => sortTasks(tasks, sortOption),
     [tasks, sortOption]
   );
+  const { mutate: deleteTaskMutation } = useDeleteTask();
+  const { mutate: updateTaskMutation } = useUpdateTask();
+
+  const onToggleTask = (id: string) => {
+    updateTaskMutation({
+      id,
+      params: {
+        isDone: !tasks.find((task) => task.id === id)?.isDone,
+      },
+    });
+  };
+
+
 
   const overdueTasks = useMemo(() => {
     const now = new Date();
@@ -39,6 +50,12 @@ export function TaskList({
       (task) => !task.isDone && isAfter(now, task.deadline)
     );
   }, [sortedTasks]);
+
+  const taskSummary = useMemo(() => {
+    const completed = tasks.filter((task) => task.isDone).length;
+    const total = tasks.length;
+    return { completed, pending: total - completed, total };
+  }, [tasks]);
 
   const renderTask = (task: Task) => (
     <Card key={task.id} className="mb-4">
@@ -62,14 +79,14 @@ export function TaskList({
           <Button
             variant="destructive"
             size="sm"
-            onClick={() => onDeleteTask(task.id)}
+            onClick={() => deleteTaskMutation(task.id)}
             className="disabled:opacity-20"
             disabled={isLoading}
           >
             Eliminar
           </Button>
         </div>
-        <p className={`text-sm mb-2 ${task.isDone ? "line-through" : ""}`}>
+        <p className={`text-left text-sm mb-2 ${task.isDone ? "line-through" : ""}`}>
           {task.description}
         </p>
         <div className="flex flex-col sm:flex-row justify-between text-xs text-gray-500">
@@ -93,6 +110,11 @@ export function TaskList({
       <CardHeader>
         <CardTitle>Lista de Tareas</CardTitle>
         <div className="mt-2">
+          <div className="text-sm text-gray-600">
+            <p>Total de tareas: {taskSummary.total}</p>
+            <p>Completadas: {taskSummary.completed}</p>
+            <p>Pendientes: {taskSummary.pending}</p>
+          </div>
           <Select onValueChange={(value) => setSortOption(value as SortOption)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Ordenar por" />
@@ -100,6 +122,8 @@ export function TaskList({
             <SelectContent>
               <SelectItem value="createdDesc">Más recientes primero</SelectItem>
               <SelectItem value="createdAsc">Más antiguas primero</SelectItem>
+              <SelectItem value="deadlineAsc">Más recientes primero</SelectItem>
+              <SelectItem value="deadlineDesc">Más antiguas primero</SelectItem>
             </SelectContent>
           </Select>
         </div>

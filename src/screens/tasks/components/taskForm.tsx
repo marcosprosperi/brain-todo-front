@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,33 +6,37 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { TaskCreate } from "@/Api/tasks/types/task";
+import useCreateTask from "../mutations/create";
 
 interface TaskFormProps {
-  onAddTask: ({ title, description, deadline }: TaskCreate) => void;
   isLoading: boolean;
 }
 
-export function TaskForm({ onAddTask, isLoading }: TaskFormProps) {
+export function TaskForm({ isLoading }: TaskFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState<Date | null>(null);
+  const { mutate: createTaskMutation, isSuccess, isPending } = useCreateTask();
 
   const isValidateTask = Boolean(
     title.trim() !== "" && description.trim() !== "" && deadline
   );
 
+  useEffect(() => {
+    if (isSuccess) {
+      setTitle("");
+      setDescription("");
+      setDeadline(null);
+    }
+  }, [isSuccess]);
+
   const handleSubmit = () => {
-    console.log(isValidateTask);
     if (isValidateTask) {
-      onAddTask({
+      createTaskMutation({
         title: title.trim(),
         description: description.trim(),
         deadline: deadline!,
       });
-      setTitle("");
-      setDescription("");
-      setDeadline(null);
     }
   };
 
@@ -46,6 +50,7 @@ export function TaskForm({ onAddTask, isLoading }: TaskFormProps) {
           <div className="space-y-2">
             <Label htmlFor="task-title">Título</Label>
             <Input
+              disabled={isLoading || isPending}
               id="task-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -56,6 +61,7 @@ export function TaskForm({ onAddTask, isLoading }: TaskFormProps) {
           <div className="space-y-2">
             <Label htmlFor="task-description">Descripción</Label>
             <Textarea
+              disabled={isLoading || isPending}
               id="task-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -63,11 +69,12 @@ export function TaskForm({ onAddTask, isLoading }: TaskFormProps) {
               required
             />
           </div>
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             <Label className="w-full" htmlFor="task-deadline">
               Fecha límite
             </Label>
             <DatePicker
+              disabled={isLoading || isPending}
               id="task-deadline"
               selected={deadline}
               onChange={(date: Date | null) => setDeadline(date)}
@@ -80,7 +87,7 @@ export function TaskForm({ onAddTask, isLoading }: TaskFormProps) {
           </div>
           <Button
             onClick={handleSubmit}
-            disabled={isLoading || !isValidateTask}
+            disabled={isLoading || !isValidateTask || isPending}
             className="w-full disabled:opacity-20"
           >
             Agregar Tarea
