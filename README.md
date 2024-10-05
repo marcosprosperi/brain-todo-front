@@ -1,7 +1,3 @@
-Aquí tienes el README actualizado incluyendo las nuevas tecnologías y librerías:
-
----
-
 # ToDo List App
 
 Una aplicación de **ToDo List** desarrollada en **React** con **Vite**, utilizando **TypeScript**, **React Query**, **TailwindCSS**, **ShadCN UI** y **Axios**. Esta aplicación permite gestionar tus tareas de manera eficiente con una interfaz moderna y fácil de usar.
