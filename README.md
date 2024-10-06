@@ -54,7 +54,7 @@ Si prefieres usar **Docker**, la aplicación tiene un `Dockerfile` para simplifi
 Desde el directorio raíz del proyecto, ejecuta el siguiente comando para construir la imagen de Docker:
 
 ```bash
-docker build -t todo-list-app .
+docker build . -t "todo-list-app" .
 ```
 
 #### 3.2 Ejecutar el contenedor de Docker
