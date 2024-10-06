@@ -24,7 +24,7 @@ Una aplicación de **ToDo List** desarrollada en **React** con **Vite**, utiliza
 
 ### 1. Clonar el repositorio
 ```bash
-git clone https://github.com/usuario/todo-list-app.git
+git clone https://github.com/marcosprosperi/brain-todo-front
 cd todo-list-app
 ```
 
